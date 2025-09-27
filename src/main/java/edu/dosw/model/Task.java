@@ -15,6 +15,8 @@ public class Task {
     private LocalDateTime date;
     private States state;
 
+    public Task() {}
+
     public Task(String title, String description, LocalDateTime date, States state) {
         this.title = title;
         this.description = description;
