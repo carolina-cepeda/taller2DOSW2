@@ -14,13 +14,12 @@ public record TaskDTO(
         LocalDateTime date,
         String state
 ) {
-    // Valores por defecto
+
     public TaskDTO {
         if (date == null) date = LocalDateTime.now();
         if (state == null) state = States.PENDING.name();
     }
 
-    // Conversión de entidad a DTO
     public static TaskDTO fromTask(Task task) {
         return new TaskDTO(
                 task.getId(),
@@ -31,7 +30,7 @@ public record TaskDTO(
         );
     }
 
-    // Conversión de DTO a entidad
+
     public Task toEntity() {
         Task task = new Task();
         task.setId(this.id != null ? this.id : UUID.randomUUID().toString());
