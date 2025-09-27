@@ -14,10 +14,12 @@ public record TaskDTO(
         LocalDateTime date,
         String state
 ) {
+
     public TaskDTO {
         if (date == null) date = LocalDateTime.now();
         if (state == null) state = States.PENDING.name();
     }
+
 
     public static TaskDTO fromTask(Task task) {
         return new TaskDTO(
@@ -28,6 +30,7 @@ public record TaskDTO(
                 task.getState() != null ? task.getState().name() : States.PENDING.name()
         );
     }
+
 
     public Task toEntity() {
         Task task = new Task();
