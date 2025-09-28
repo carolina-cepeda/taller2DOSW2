@@ -1,23 +1,24 @@
 package edu.dosw.model;
 
-public class User {
+import java.util.UUID;
+
+public abstract class User {
     private String id;
     private String username;
-    private UserType type;
 
-    public User() {}
-
-    public User(String id, String username, UserType type) {
-        this.id = id;
+    protected User(String username) {
+        this.id = UUID.randomUUID().toString();
         this.username = username;
-        this.type = type;
     }
 
     public String getId() { return id; }
     public String getUsername() { return username; }
-    public UserType getType() { return type; }
 
     public void setId(String id) { this.id = id; }
     public void setUsername(String username) { this.username = username; }
-    public void setType(UserType type) { this.type = type; }
+
+    public abstract boolean canCreateTask();
+    public abstract boolean canUpdateTask();
+    public abstract boolean canDeleteTasks();
+
 }

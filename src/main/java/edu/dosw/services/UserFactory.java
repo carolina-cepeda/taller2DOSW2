@@ -1,11 +1,18 @@
 package edu.dosw.services;
 
+import edu.dosw.dto.UserDTO;
+import edu.dosw.model.AdminUser;
+import edu.dosw.model.GuestUser;
+import edu.dosw.model.MemberUser;
 import edu.dosw.model.User;
-import edu.dosw.model.UserType;
-
 public class UserFactory {
 
-    public User generateUser(String id, String username, UserType type) {
-        return new User(id,username,type);
+    public User generateUser(UserDTO userDTO) {
+        return switch (userDTO.type()) {
+            case "ADMIN" -> new AdminUser(userDTO.username());
+            case "MEMBER" -> new MemberUser(userDTO.username());
+            case "GUEST" -> new GuestUser(userDTO.username());
+            default -> throw new IllegalArgumentException("Invalid user type");
+        };
     }
 }

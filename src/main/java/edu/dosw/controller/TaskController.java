@@ -1,57 +1,61 @@
 package edu.dosw.controller;
 
 import edu.dosw.dto.TaskDTO;
-import edu.dosw.model.Task;
-import edu.dosw.model.User;
-import edu.dosw.model.UserType;
+import edu.dosw.exception.ResponseHandler;
 import edu.dosw.services.TaskService;
-import edu.dosw.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/task")
 public class TaskController {
     private final TaskService taskService;
-    private final UserService userService;
 
     @Autowired
-    public TaskController(TaskService taskService, UserService userService) {
+    public TaskController(TaskService taskService) {
         this.taskService = taskService;
-        this.userService = userService;
     }
 
     @PostMapping("/{userId}/tasks")
     @Operation(summary = "Create a new task (only ADMIN, MEMBER)")
-    public Task createTask(@PathVariable String userId, @RequestBody TaskDTO task) {
-        User user = userService.getUserById(userId).orElse(null);
-
-        if (user != null && (user.getType() == UserType.ADMIN || user.getType() == UserType.MEMBER)) {
-            return taskService.createTask(task);
+    public ResponseEntity createTask(@PathVariable String userId, @RequestBody TaskDTO task) {
+        if (task == null){
+            return ResponseHandler.generateErrorResponse("Task is null", HttpStatus.BAD_REQUEST);
         }
-        return null;
+        return ResponseHandler.generateResponse("Task created", HttpStatus.OK, taskService.createTask(task, userId));
     }
 
     @GetMapping("/{userId}/tasks")
     @Operation(summary = "Get all tasks (all users)")
-    public List<Task> getTasks(@PathVariable String userId) {
-        return taskService.getTasks();
+    public ResponseEntity getTasks(@PathVariable String userId) {
+        if (userId == null) {
+            return ResponseHandler.generateErrorResponse("User id is null", HttpStatus.BAD_REQUEST);
+        }
+        return ResponseHandler.generateResponse("Tasks", HttpStatus.OK, taskService.getTasks());
     }
 
     @GetMapping("/{userId}/tasks/{filter}/{extra}")
     @Operation(summary = "Get tasks by filter (only ADMIN)")
-    public List<Task> getTasksByFilter(@PathVariable String userId,
+    public ResponseEntity getTasksByFilter(@PathVariable String userId,
                                        @PathVariable String filter,
                                        @PathVariable String extra) {
-        User user = userService.getUserById(userId).orElse(null);
-
-        if (user != null && user.getType() == UserType.ADMIN) {
-            return taskService.getTasksByFilter(filter, extra);
+        if (filter == null || extra == null) {
+            return ResponseHandler.generateErrorResponse("Filter or extra is null", HttpStatus.BAD_REQUEST);
         }
-        return null;
+        return ResponseHandler.generateResponse("Tasks", HttpStatus.OK, taskService.getTasksByFilter(filter, extra));
+    }
+
+    @DeleteMapping("/{userId}/tasks/{id}")
+    @Operation(summary = "Delete a task (only ADMIN)")
+    public ResponseEntity deleteTask(@PathVariable String userId, @PathVariable String id) {
+        if (id == null) {
+            return ResponseHandler.generateErrorResponse("Task id is null", HttpStatus.BAD_REQUEST);
+        }
+        return ResponseHandler.generateResponse("Task deleted", HttpStatus.OK, taskService.deleteTask(userId, id));
     }
 }
