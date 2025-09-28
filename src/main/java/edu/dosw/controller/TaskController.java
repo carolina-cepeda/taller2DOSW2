@@ -27,7 +27,7 @@ public class TaskController {
         if (task == null){
             return ResponseHandler.generateErrorResponse("Task is null", HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok(taskService.createTask(task, userId));
+        return ResponseHandler.generateResponse("Task created", HttpStatus.OK, taskService.createTask(task, userId));
     }
 
     @GetMapping("/{userId}/tasks")
