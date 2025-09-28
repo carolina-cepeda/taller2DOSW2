@@ -26,8 +26,8 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    public User createUser(@RequestParam String username, @RequestParam UserType type) {
-        return userFactory.generateUser(username, type);
+    public User createUser(@RequestParam String id,@RequestParam String username, @RequestParam UserType type) {
+        return userFactory.generateUser(id,username, type);
     }
 
     @PostMapping("/{userType}/task")
