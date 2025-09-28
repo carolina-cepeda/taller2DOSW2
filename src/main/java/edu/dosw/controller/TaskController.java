@@ -1,6 +1,7 @@
 package edu.dosw.controller;
 
 import edu.dosw.dto.TaskDTO;
+import edu.dosw.dto.UpdateTaskDTO;
 import edu.dosw.exception.ResponseHandler;
 import edu.dosw.services.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,12 +51,21 @@ public class TaskController {
         return ResponseHandler.generateResponse("Tasks", HttpStatus.OK, taskService.getTasksByFilter(filter, extra));
     }
 
-    @DeleteMapping("/{userId}/tasks/{id}")
-    @Operation(summary = "Delete a task (only ADMIN)")
-    public ResponseEntity deleteTask(@PathVariable String userId, @PathVariable String id) {
-        if (id == null) {
+    @PatchMapping("/{userId}/tasks/{taskId}")
+    @Operation(summary = "Update a task (only ADMIN and MEMBER)")
+    public ResponseEntity updateTask(@PathVariable String userId, @PathVariable String taskId, @RequestBody UpdateTaskDTO updatedTask) {
+        if (taskId == null) {
             return ResponseHandler.generateErrorResponse("Task id is null", HttpStatus.BAD_REQUEST);
         }
-        return ResponseHandler.generateResponse("Task deleted", HttpStatus.OK, taskService.deleteTask(userId, id));
+        return ResponseHandler.generateResponse("Task updated", HttpStatus.OK, taskService.updateTask(updatedTask , taskId, userId));
+    }
+
+    @DeleteMapping("/{userId}/tasks/{taskId}")
+    @Operation(summary = "Delete a task (only ADMIN)")
+    public ResponseEntity deleteTask(@PathVariable String userId, @PathVariable String taskId) {
+        if (taskId == null) {
+            return ResponseHandler.generateErrorResponse("Task id is null", HttpStatus.BAD_REQUEST);
+        }
+        return ResponseHandler.generateResponse("Task deleted", HttpStatus.OK, taskService.deleteTask(userId, taskId));
     }
 }

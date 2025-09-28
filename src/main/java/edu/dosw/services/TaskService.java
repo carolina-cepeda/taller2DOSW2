@@ -1,6 +1,8 @@
 package edu.dosw.services;
 
 import edu.dosw.dto.TaskDTO;
+import edu.dosw.dto.UpdateTaskDTO;
+import edu.dosw.model.States;
 import edu.dosw.model.Task;
 import edu.dosw.model.User;
 import edu.dosw.repositories.TaskRepository;
@@ -46,12 +48,23 @@ public class TaskService {
         return taskRepository.save(task.toEntity());
     }
 
-    public Task updateTask(TaskDTO task, String userId) {
+    public Task updateTask(UpdateTaskDTO updateTask, String taskId, String userId) {
         User user = userService.getUserById(userId).orElse(null);
         if (user == null || !user.canUpdateTask()) {
             throw new RuntimeException("User is not authorized to update tasks");
         }
-        return taskRepository.save(task.toEntity());
+
+        Task task = taskRepository.findById(taskId).orElse(null);
+        if (task == null) {
+            throw new RuntimeException("Task not found by the given ID");
+        }
+
+        if (updateTask.title() != null)       task.setTitle(updateTask.title());
+        if (updateTask.description() != null) task.setDescription(updateTask.description());
+        if (updateTask.date() != null)        task.setDate(updateTask.date());
+        if (updateTask.state() != null)       task.setState(States.valueOf(updateTask.state()));
+
+        return taskRepository.save(task);
     }
 
     public boolean deleteTask(String userId, String taskId) {
