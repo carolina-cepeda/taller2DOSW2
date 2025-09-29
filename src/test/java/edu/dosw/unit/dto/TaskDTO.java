@@ -1,5 +1,6 @@
-package edu.dosw.dto;
+package edu.dosw.unit.dto;
 
+import edu.dosw.dto.TaskDTO;
 import edu.dosw.model.States;
 import edu.dosw.model.Task;
 import org.junit.jupiter.api.Test;

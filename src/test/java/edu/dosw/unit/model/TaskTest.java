@@ -1,9 +1,11 @@
-package edu.dosw.model;
+package edu.dosw.unit.model;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
 
+import edu.dosw.model.States;
+import edu.dosw.model.Task;
 import org.junit.jupiter.api.Test;
 
 class TaskTest {

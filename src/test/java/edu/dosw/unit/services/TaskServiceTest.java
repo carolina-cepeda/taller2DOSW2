@@ -1,9 +1,11 @@
-package edu.dosw.services;
+package edu.dosw.unit.services;
 
 import edu.dosw.dto.TaskDTO;
 import edu.dosw.model.Task;
 import edu.dosw.model.User;
 import edu.dosw.repositories.TaskRepository;
+import edu.dosw.services.TaskService;
+import edu.dosw.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

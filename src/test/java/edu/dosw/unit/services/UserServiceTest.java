@@ -1,8 +1,10 @@
-package edu.dosw.services;
+package edu.dosw.unit.services;
 
 import edu.dosw.dto.UserDTO;
 import edu.dosw.model.*;
 import edu.dosw.repositories.UserRepository;
+import edu.dosw.services.UserFactory;
+import edu.dosw.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;

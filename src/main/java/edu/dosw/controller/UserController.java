@@ -21,7 +21,7 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity createUser(@RequestBody UserDTO user) {
+    public ResponseEntity createUser(@RequestBody(required = false) UserDTO user) {
         if(user == null){
             return ResponseHandler.generateErrorResponse("User is null", HttpStatus.BAD_REQUEST);
         }

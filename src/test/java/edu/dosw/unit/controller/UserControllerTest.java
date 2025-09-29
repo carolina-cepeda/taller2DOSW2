@@ -1,5 +1,6 @@
-package edu.dosw.controller;
+package edu.dosw.unit.controller;
 
+import edu.dosw.controller.UserController;
 import edu.dosw.dto.UserDTO;
 import edu.dosw.model.MemberUser;
 import edu.dosw.model.User;

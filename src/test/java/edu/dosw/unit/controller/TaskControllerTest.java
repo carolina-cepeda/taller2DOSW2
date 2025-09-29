@@ -1,5 +1,6 @@
-package edu.dosw.controller;
+package edu.dosw.unit.controller;
 
+import edu.dosw.controller.TaskController;
 import edu.dosw.dto.TaskDTO;
 import edu.dosw.model.Task;
 import edu.dosw.services.TaskService;
