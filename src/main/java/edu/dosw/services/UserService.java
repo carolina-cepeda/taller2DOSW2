@@ -1,6 +1,8 @@
 package edu.dosw.services;
 
 import edu.dosw.dto.UserDTO;
+import edu.dosw.model.AdminUser;
+import edu.dosw.model.MemberUser;
 import edu.dosw.model.User;
 import edu.dosw.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +31,17 @@ public class UserService {
                 throw new IllegalStateException("User already exists: " + userDTO.username());
             });
 
-            UserDTO savedUser = userRepository.save(userDTO);
-            if (savedUser.username() == null) {
+            if (userDTO.username() == null) {
                 throw new RuntimeException("Failed to save user");
             }
-            
-            return userFactory.generateUser(savedUser);
-            
+
+            User user = userFactory.generateUser(userDTO);
+            userRepository.save(new UserDTO(
+                    user.getId(),
+                    user.getUserName(),
+                    getUserType(user)));
+            return user;
+
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw e;
         } catch (DuplicateKeyException e) {
@@ -54,5 +60,14 @@ public class UserService {
             .orElseThrow(() -> new RuntimeException("No se encontró el usuario con ID: " + id));
             
         return userFactory.generateUser(userDTO);
+    }
+
+    private String getUserType(User user) {
+        if (user instanceof AdminUser) {
+            return "ADMIN";
+        } else if (user instanceof MemberUser) {
+            return "MEMBER";
+        }
+        return "GUEST";
     }
 }
