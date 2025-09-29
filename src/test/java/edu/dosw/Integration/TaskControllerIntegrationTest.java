@@ -3,6 +3,7 @@ package edu.dosw.Integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.dosw.controller.TaskController;
 import edu.dosw.dto.TaskDTO;
+import edu.dosw.dto.UpdateTaskDTO;
 import edu.dosw.model.States;
 import edu.dosw.model.Task;
 import edu.dosw.services.TaskService;
@@ -14,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -111,16 +113,25 @@ class TaskControllerIntegrationTest {
     // --- UPDATE ---
     @Test
     void testUpdateTask_success() throws Exception {
-        TaskDTO dto = sampleTaskDTO();
+        UpdateTaskDTO updateDto = new UpdateTaskDTO("Updated Title", "Updated Description",
+                LocalDate.now().plusDays(1).atStartOfDay(), "IN_PROGRESS");
+
         Task task = sampleTaskEntity();
-        when(taskService.updateTask(dto, "user1")).thenReturn(task);
+        task.setTitle("Updated Title");
+        task.setDescription("Updated Description");
+        task.setDate(LocalDate.now().plusDays(1).atStartOfDay());
+        task.setState(States.IN_PROGRESS);
+
+        when(taskService.updateTask(any(UpdateTaskDTO.class), eq("1"), eq("user1"))).thenReturn(task);
 
         mockMvc.perform(put("/api/task/user1/tasks/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Task updated"))
-                .andExpect(jsonPath("$.data.title").value("Sample Task"));
+                .andExpect(jsonPath("$.data.title").value("Updated Title"))
+                .andExpect(jsonPath("$.data.description").value("Updated Description"))
+                .andExpect(jsonPath("$.data.state").value("IN_PROGRESS"));
     }
 
     @Test
