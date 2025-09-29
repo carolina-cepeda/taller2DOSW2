@@ -119,10 +119,11 @@ public class TaskController {
      * Solo accesible para usuarios ADMIN y MEMBER.
      *
      * @param userId ID del usuario que realiza la operación
-     * @param task Nuevos datos de la tarea
+     * @param taskId id de la tarea a actualizar
+     * @param updatedTask datos de la tarea a actualizar
      * @return ResponseEntity con la tarea actualizada o mensaje de error
      */
-    @PutMapping(
+    @PatchMapping(
             value = "/{userId}/tasks/{taskId}",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
@@ -146,7 +147,7 @@ public class TaskController {
      * Solo accesible para usuarios ADMIN.
      *
      * @param userId ID del usuario que realiza la operación
-     * @param id ID de la tarea a eliminar
+     * @param taskId ID de la tarea a eliminar
      * @return ResponseEntity con mensaje de éxito o error
      */
     @DeleteMapping("/{userId}/tasks/{id}")
