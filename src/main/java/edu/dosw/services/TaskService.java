@@ -84,7 +84,7 @@ public class TaskService {
     }
 
     public Task updateTask(UpdateTaskDTO updateTask, String taskId, String userId) {
-        User user = userService.getUserById(userId).orElse(null);
+        User user = userService.getUserById(userId);
         if (user == null || !user.canUpdateTask()) {
             throw new RuntimeException("User is not authorized to update tasks");
         }
