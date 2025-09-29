@@ -179,3 +179,22 @@ spring.data.mongodb.database=taller2dosw
 # Configuración del servidor
 server.port=8080
 ```
+
+## Ejecución de Tests
+
+El proyecto incluye pruebas unitarias y de integración que puedes ejecutar de las siguientes maneras:
+
+### Ejecutar todos los tests
+```bash
+mvn test
+```
+
+### Generar reporte de cobertura
+```bash
+mvn jacoco:report
+```
+El reporte de cobertura estará disponible en: `target/site/jacoco/index.html`
+Al hacer el reporte de jacoco, puedes verlo ejecutando:
+```bash
+start target\site\jacoco\index.html
+```
