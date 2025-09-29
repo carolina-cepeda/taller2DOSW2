@@ -15,7 +15,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
@@ -57,9 +57,42 @@ class UserControllerIntegrationTest {
     @Test
     void testCreateUser_nullBody_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/api/user/create")
-                        .contentType(MediaType.APPLICATION_JSON)) // sin body
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("User is null"))
                 .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void testGetUserById_success() throws Exception {
+        String userId = "1";
+        User userEntity = sampleUserEntity();
+
+        when(userService.getUserById(userId)).thenReturn(userEntity);
+
+        mockMvc.perform(get("/api/user/{userId}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("User found"))
+                .andExpect(jsonPath("$.data.userName").value("johndoe"));
+    }
+
+    @Test
+    void testGetUserById_nullId_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/user/{userId}", " "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User id cannot be null or empty"))
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void testGetUserById_notFound() throws Exception {
+        String userId = "99";
+
+        when(userService.getUserById(userId)).thenReturn(null);
+
+        mockMvc.perform(get("/api/user/{userId}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("User found"))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 }
