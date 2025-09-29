@@ -1,7 +1,12 @@
 package edu.dosw.repositories;
 
-import edu.dosw.model.User;
+import edu.dosw.dto.UserDTO;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
-public interface UserRepository extends MongoRepository<User, String> {
+import java.util.Optional;
+
+public interface UserRepository extends MongoRepository<UserDTO, String> {
+    @Query("{ 'username': ?0 }")
+    Optional<UserDTO> findByUsername(String username);
 }

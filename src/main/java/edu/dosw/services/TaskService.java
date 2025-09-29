@@ -38,7 +38,7 @@ public class TaskService {
     }
 
     public Task createTask(TaskDTO task, String userId) {
-        User user = userService.getUserById(userId).orElse(null);
+        User user = userService.getUserById(userId);
         if (user == null || !user.canCreateTask()) {
             throw new RuntimeException("User is not authorized to create tasks");
         }
@@ -47,7 +47,7 @@ public class TaskService {
     }
 
     public Task updateTask(TaskDTO task, String userId) {
-        User user = userService.getUserById(userId).orElse(null);
+        User user = userService.getUserById(userId);
         if (user == null || !user.canUpdateTask()) {
             throw new RuntimeException("User is not authorized to update tasks");
         }
@@ -55,7 +55,7 @@ public class TaskService {
     }
 
     public boolean deleteTask(String userId, String taskId) {
-        User user = userService.getUserById(userId).orElse(null);
+        User user = userService.getUserById(userId);
         if (user == null || !user.canDeleteTasks()) {
             throw new RuntimeException("User is not authorized to delete tasks");
         }
