@@ -1,97 +1,67 @@
 package edu.dosw.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.dosw.dto.UserDTO;
+import edu.dosw.model.MemberUser;
+import edu.dosw.model.User;
 import edu.dosw.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@WebMvcTest(UserController.class)
-@ContextConfiguration(classes = {UserController.class})
 class UserControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
     private UserService userService;
+    private UserController userController;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @BeforeEach
+    void setUp() {
+        userService = mock(UserService.class);
+        userController = new UserController(userService);
+    }
 
-    //Error
-//    @Test
-//    void testCreateUserSuccess() throws Exception {
-//        UserDTO dto = new UserDTO("username", "ADMIN");
-//        User savedUser = mock(User.class);
-//        when(savedUser.getUsername()).thenReturn("username");
-//
-//        when(userService.createUser(any(UserDTO.class))).thenReturn(savedUser);
-//
-//        mockMvc.perform(post("/api/user/create")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(dto)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("User created"))
-//                .andExpect(jsonPath("$.data.username").value("username"));
-//    }
-//
-//    // errorea Admin
-//    @Test
-//    void testCreateUserAdmin() throws Exception {
-//        UserDTO dto = new UserDTO("admin user", "ADMIN");
-//        User savedUser = mock(User.class);
-//        when(savedUser.getUsername()).thenReturn("admin user");
-//
-//        when(userService.createUser(any(UserDTO.class))).thenReturn(savedUser);
-//
-//        mockMvc.perform(post("/api/user/create")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(dto)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("User created"))
-//                .andExpect(jsonPath("$.data.username").value("admin user"));
-//    }
-//
-//    // error
-//    @Test
-//    void testCreateUserMember() throws Exception {
-//        UserDTO dto = new UserDTO("member user", "MEMBER");
-//        User savedUser = mock(User.class);
-//        when(savedUser.getUsername()).thenReturn("member user");
-//
-//        when(userService.createUser(any(UserDTO.class))).thenReturn(savedUser);
-//
-//        mockMvc.perform(post("/api/user/create")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(dto)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.data.username").value("member user"));
-//    }
-//
-//    // error
-//    @Test
-//    void testCreateUserGuest() throws Exception {
-//        UserDTO dto = new UserDTO("guestUser", "GUEST");
-//        User savedUser = mock(User.class);
-//        when(savedUser.getUsername()).thenReturn("guestUser");
-//
-//        when(userService.createUser(any(UserDTO.class))).thenReturn(savedUser);
-//
-//        mockMvc.perform(post("/api/user/create")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(dto)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.data.username").value("guestUser"));
-//    }
-//
-//    @Test
-//    void testCreateUserWithNullBody() throws Exception {
-//        mockMvc.perform(post("/api/user/create")
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest());
-//    }
+    @Test
+    void test_createUser_should_return_badRequest_when_user_is_null() {
+        // Act
+        ResponseEntity<?> response = userController.createUser(null);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("User is null"));
+        verify(userService, never()).createUser(any());
+    }
+
+    @Test
+    void test_createUser_should_return_ok_when_user_is_valid() {
+        // Arrange
+        UserDTO dto = new UserDTO("1", "john", "MEMBER");
+        User mockUser = new MemberUser("john");
+        mockUser.setId("1");
+
+        when(userService.createUser(dto)).thenReturn(mockUser);
+
+        // Act
+        ResponseEntity<?> response = userController.createUser(dto);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("User created"));
+        verify(userService).createUser(dto);
+    }
+
+    @Test
+    void test_createUser_should_propagate_exception_from_service() {
+        // Arrange
+        UserDTO dto = new UserDTO("2", "errorUser", "MEMBER");
+        when(userService.createUser(dto)).thenThrow(new RuntimeException("Service error"));
+
+        // Act & Assert
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> userController.createUser(dto));
+        assertEquals("Service error", ex.getMessage());
+        verify(userService).createUser(dto);
+    }
 }

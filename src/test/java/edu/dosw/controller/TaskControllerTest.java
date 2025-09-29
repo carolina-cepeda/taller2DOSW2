@@ -1,121 +1,143 @@
 package edu.dosw.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.dosw.dto.TaskDTO;
-import edu.dosw.model.States;
 import edu.dosw.model.Task;
 import edu.dosw.services.TaskService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@WebMvcTest(TaskController.class)
-@ContextConfiguration(classes = {TaskController.class})
 class TaskControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
     private TaskService taskService;
+    private TaskController taskController;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @BeforeEach
+    void setUp() {
+        taskService = mock(TaskService.class);
+        taskController = new TaskController(taskService);
+    }
 
     private TaskDTO sampleTaskDTO() {
-        return new TaskDTO(
-                "123",
-                "Task title",
-                "Task desc",
-                LocalDateTime.of(2025, 1, 1, 12, 0),
-                "PENDING"
-        );
+        return new TaskDTO("1", "Test task", "desc", LocalDateTime.of(2025, 1, 1, 12, 0), "PENDING");
     }
 
     @Test
-    void testCreateTask() throws Exception {
+    void test_createTask_should_return_badRequest_when_task_is_null() {
+        // Act
+        ResponseEntity<?> response = taskController.createTask("user1", null);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("Task is null"));
+        verify(taskService, never()).createTask(any(), anyString());
+    }
+
+    @Test
+    void test_createTask_should_return_ok_when_task_is_valid() {
+        // Arrange
         TaskDTO dto = sampleTaskDTO();
-        when(taskService.createTask(dto, "user1")).thenReturn(dto.toEntity());
+        Task mockTask = dto.toEntity();
 
-        mockMvc.perform(post("/api/task/user1/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Task created"))
-                .andExpect(jsonPath("$.data.title").value("Task title"))
-                .andExpect(jsonPath("$.data.state").value("PENDING"));
+        when(taskService.createTask(dto, "user1")).thenReturn(mockTask);
+
+        // Act
+        ResponseEntity<?> response = taskController.createTask("user1", dto);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("Task created"));
+        verify(taskService).createTask(dto, "user1");
     }
 
     @Test
-    void testDeleteTask() throws Exception {
+    void test_getTasks_should_return_badRequest_when_userId_is_null() {
+        // Act
+        ResponseEntity<?> response = taskController.getTasks(null);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("User id is null"));
+        verify(taskService, never()).getTasks();
+    }
+
+    @Test
+    void test_getTasks_should_return_ok_with_task_list() {
+        // Arrange
+        Task task = new Task();
+        task.setId("1");
+        task.setTitle("Test task");
+
+        when(taskService.getTasks()).thenReturn(List.of(task));
+
+        // Act
+        ResponseEntity<?> response = taskController.getTasks("user1");
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("Tasks"));
+        verify(taskService).getTasks();
+    }
+
+    @Test
+    void test_getTasksByFilter_should_return_badRequest_when_filter_or_extra_is_null() {
+        // Act
+        ResponseEntity<?> response1 = taskController.getTasksByFilter("user1", null, "extra");
+        ResponseEntity<?> response2 = taskController.getTasksByFilter("user1", "filter", null);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response1.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response2.getStatusCode());
+        verify(taskService, never()).getTasksByFilter(anyString(), anyString());
+    }
+
+    @Test
+    void test_getTasksByFilter_should_return_ok_with_filtered_tasks() {
+        // Arrange
+        Task task = new Task();
+        task.setId("1");
+        task.setTitle("Filtered task");
+
+        when(taskService.getTasksByFilter("keyword", "Test")).thenReturn(List.of(task));
+
+        // Act
+        ResponseEntity<?> response = taskController.getTasksByFilter("user1", "keyword", "Test");
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("Tasks"));
+        verify(taskService).getTasksByFilter("keyword", "Test");
+    }
+
+    @Test
+    void test_deleteTask_should_return_badRequest_when_id_is_null() {
+        // Act
+        ResponseEntity<?> response = taskController.deleteTask("user1", null);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("Task id is null"));
+        verify(taskService, never()).deleteTask(anyString(), anyString());
+    }
+
+    @Test
+    void test_deleteTask_should_return_ok_when_task_deleted() {
+        // Arrange
         when(taskService.deleteTask("user1", "task1")).thenReturn(true);
 
-        mockMvc.perform(delete("/api/task/user1/tasks/task1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Task deleted"))
-                .andExpect(jsonPath("$.data").value(true));
+        // Act
+        ResponseEntity<?> response = taskController.deleteTask("user1", "task1");
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("Task deleted"));
+        verify(taskService).deleteTask("user1", "task1");
     }
-    @Test
-    void testGetTasksByFilter() throws Exception {
-        Task taskEntity = new Task();
-        taskEntity.setId("1");
-        taskEntity.setTitle("Test Task");
-        taskEntity.setDescription("Desc");
-        taskEntity.setState(States.PENDING);
-
-        when(taskService.getTasks()).thenReturn(List.of(taskEntity));
-
-        mockMvc.perform(get("/api/task/123/tasks"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Tasks"))
-                .andExpect(jsonPath("$.data[0].title").value("Test Task"));
-
-    }
-    @Test
-    void testGetTasksByFilter_success() throws Exception {
-        Task task1 = new Task();
-        task1.setId("1");
-        task1.setTitle("Task A");
-        task1.setDescription("Desc A");
-        task1.setState(States.PENDING);
-        task1.setDate(LocalDateTime.now());
-
-        Task task2 = new Task();
-        task2.setId("2");
-        task2.setTitle("Task B");
-        task2.setDescription("Desc B");
-        task2.setState(States.PENDING);
-        task2.setDate(LocalDateTime.now());
-
-        when(taskService.getTasksByFilter("status", "PENDING"))
-                .thenReturn(List.of(task1, task2));
-
-        mockMvc.perform(get("/api/task/123/tasks/status/PENDING")) // OJO: ruta correcta
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Tasks"))
-                .andExpect(jsonPath("$.data[0].title").value("Task A"))
-                .andExpect(jsonPath("$.data[1].title").value("Task B"));
-
-        verify(taskService).getTasksByFilter("status", "PENDING");
-    }
-
-    @Test
-    void testCreateTask_nullBodyReturnsBadRequest() throws Exception {
-        mockMvc.perform(post("/api/task/123/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)) // sin body
-                .andExpect(status().isBadRequest());
-    }
-
 }
