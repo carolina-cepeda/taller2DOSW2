@@ -1,6 +1,7 @@
 package edu.dosw.controller;
 
 import edu.dosw.dto.TaskDTO;
+import edu.dosw.dto.UpdateTaskDTO;
 import edu.dosw.exception.ResponseHandler;
 import edu.dosw.services.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,7 +58,7 @@ public class TaskController {
     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
     @ApiResponse(responseCode = "403", description = "No autorizado")
     public ResponseEntity<?> createTask(
-            @PathVariable String userId, 
+            @PathVariable String userId,
             @RequestBody TaskDTO task) {
         if (task == null){
             return ResponseHandler.generateErrorResponse("Task is null", HttpStatus.BAD_REQUEST);
@@ -122,25 +123,22 @@ public class TaskController {
      * @return ResponseEntity con la tarea actualizada o mensaje de error
      */
     @PutMapping(
-        value = "/{userId}/tasks/{taskId}",
-        consumes = MediaType.APPLICATION_JSON_VALUE
+            value = "/{userId}/tasks/{taskId}",
+            consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-        summary = "Actualiza una tarea existente",
-        description = "Permite a usuarios ADMIN y MEMBER actualizar tareas"
+            summary = "Actualiza una tarea existente",
+            description = "Permite a usuarios ADMIN y MEMBER actualizar tareas"
     )
     @ApiResponse(responseCode = "200", description = "Tarea actualizada exitosamente")
     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
     @ApiResponse(responseCode = "403", description = "No autorizado")
     @ApiResponse(responseCode = "404", description = "Tarea no encontrada")
-    public ResponseEntity<?> updateTask(
-            @PathVariable String userId, 
-            @PathVariable String taskId, 
-            @RequestBody TaskDTO task) {
-        if (taskId == null){
+    public ResponseEntity updateTask(@PathVariable String userId, @PathVariable String taskId, @RequestBody UpdateTaskDTO updatedTask) {
+        if (taskId == null) {
             return ResponseHandler.generateErrorResponse("Task id is null", HttpStatus.BAD_REQUEST);
         }
-        return ResponseHandler.generateResponse("Task updated", HttpStatus.OK, taskService.updateTask(task, userId));
+        return ResponseHandler.generateResponse("Task updated", HttpStatus.OK, taskService.updateTask(updatedTask , taskId, userId));
     }
 
     /**
@@ -153,19 +151,19 @@ public class TaskController {
      */
     @DeleteMapping("/{userId}/tasks/{id}")
     @Operation(
-        summary = "Elimina una tarea",
-        description = "Permite a usuarios ADMIN eliminar tareas"
+            summary = "Elimina una tarea",
+            description = "Permite a usuarios ADMIN eliminar tareas"
     )
     @ApiResponse(responseCode = "200", description = "Tarea eliminada exitosamente")
     @ApiResponse(responseCode = "400", description = "ID de tarea inválido")
     @ApiResponse(responseCode = "403", description = "No autorizado")
     @ApiResponse(responseCode = "404", description = "Tarea no encontrada")
     public ResponseEntity<?> deleteTask(
-            @PathVariable String userId, 
-            @PathVariable String id) {
-        if (id == null) {
+            @PathVariable String userId,
+            @PathVariable String taskId) {
+        if (taskId == null) {
             return ResponseHandler.generateErrorResponse("Task id is null", HttpStatus.BAD_REQUEST);
         }
-        return ResponseHandler.generateResponse("Task deleted", HttpStatus.OK, taskService.deleteTask(userId, id));
+        return ResponseHandler.generateResponse("Task deleted", HttpStatus.OK, taskService.deleteTask(userId, taskId));
     }
 }
