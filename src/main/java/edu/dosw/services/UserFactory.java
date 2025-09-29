@@ -5,11 +5,13 @@ import edu.dosw.model.AdminUser;
 import edu.dosw.model.GuestUser;
 import edu.dosw.model.MemberUser;
 import edu.dosw.model.User;
+import org.springframework.stereotype.Component;
 
 /**
  * Factory class for creating User instances based on UserDTO.
  * Handles the creation of different user types (Admin, Member, Guest).
  */
+@Component
 public class UserFactory {
 
     /**
